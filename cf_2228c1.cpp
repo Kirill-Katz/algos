@@ -25,88 +25,113 @@ void solve() {
 
     cin >> a; cin >> n;
 
-    array<int, 2> d;
-    for (int i = 0; i < n; ++i) {
-        cin >> d[i];
-    }
+    int d0;
+    int d1;
 
-    if (a == 0) {
-        cout << d[0] << '\n';
-        return;
-    }
+    cin >> d0;
+    cin >> d1;
 
-    long long len = 0;
     long long div = 1;
-
-    while (a / div > 0) {
+    int len = 0;
+    while (a / div >= 10) {
         div *= 10;
         len++;
     }
-    div /= 10;
 
-    long long hsd = a / div;
-    if (hsd == d[0] || hsd == d[1]) {
-        long long init = 0;
-        int j = 0;
+    long long lower = 0;
+    long long upper = 0;
 
-        while (j < len) {
-            long long c = (a / div) % 10;
+    vector<long long> pref;
 
-            if (c != d[0] && c != d[1]) {
+    int i = 0;
+    for (; i <= len; ++i) {
+        long long c = (a / div) % 10;
+
+        if (c == d0 || c == d1) {
+            lower = lower * 10 + (c == d0 ? d0 : d1);
+            upper = upper * 10 + (c == d0 ? d0 : d1);
+            pref.push_back(c);
+        } else {
+            break;
+        }
+        div /= 10;
+    }
+
+    if (i == len + 1) {
+        cout << 0 << '\n';
+        return;
+    }
+
+    long long c = (a / div) % 10;
+
+    if (c > d1) {
+        for (int j = i; j <= len; ++j) {
+            lower = lower * 10 + d1;
+        }
+
+        int p = -1;
+        for (int j = (int)pref.size() - 1; j >= 0; --j) {
+            if (pref[j] < d1) {
+                p = j;
                 break;
             }
-
-            init = init * 10 + c;
-            div /= 10;
-            j++;
         }
 
-        if (j == len) {
-            cout << abs(init - a) << '\n';
-            return;
+        if (p == -1) {
+            upper = d0 == 0 ? d1 : d0;
+            for (int j = 1; j <= len + 1; ++j) {
+                upper = upper * 10 + d0;
+            }
+        } else {
+            upper = 0;
+            pref[p] = d1;
+            for (int j = 0; j <= p; ++j) {
+                upper = upper * 10 + pref[j];
+            }
+            for (int j = p + 1; j <= len; ++j) {
+                upper = upper * 10 + d0;
+            }
+        }
+    } else if (c < d0) {
+        for (int j = i; j <= len; ++j) {
+            upper = upper * 10 + d0;
         }
 
-        long long lower = init * 10 + d[0];
-        long long upper = init * 10 + d[1];
+        int p = -1;
 
-        long long fucking_lower = init * 10 + d[0];
-        long long fucking_upper = init * 10 + d[1];
-
-        for (int i = j + 1; i < len; ++i) {
-            lower = lower * 10 + d[1];
-            upper = upper * 10 + d[0];
-
-            fucking_lower = fucking_lower * 10 + d[0];
-            fucking_upper = fucking_upper * 10 + d[1];
+        for (int j = (int)pref.size() - 1; j >= 0; --j) {
+            if (pref[j] > d0) {
+                p = j;
+                break;
+            }
         }
 
-        cout << min({ abs(a - lower), abs(a - upper), abs(a - fucking_lower), abs(a - fucking_upper) }) << '\n';
-    } else if (hsd > d[0] && hsd >= d[1]) {
-        long long upper = d[0] * 10 + d[0];
-        long long lower = d[1];
+        if (p == -1) {
+            lower = d1;
+            for (int j = 1; j <= len - 1; ++j) {
+                lower = lower * 10 + d1;
+            }
+        } else {
+            lower = 0;
+            pref[p] = d0;
 
-        for (int i = 1; i < len; ++i) {
-            upper *= 10;
-            upper += d[0];
-
-            lower *= 10;
-            lower += d[1];
-        }
-
-        cout << min(abs(a - upper), abs(a - lower)) << '\n';
-    } else {
-        long long upper = d[0];
-        long long lower = d[1];
-
-        for (int i = 1; i < len; ++i) {
-            if (i != 1) {
-                lower *= 10; lower += d[1];
+            for (int j = 0; j <= p; ++j) {
+                lower = lower * 10 + pref[j];
             }
 
-            upper *= 10;
-            upper += d[0];
+            for (int j = p + 1; j <= len; ++j) {
+                lower = lower * 10 + d1;
+            }
         }
+    } else {
+        lower = lower * 10 + d0;
+        upper = upper * 10 + d1;
 
-        cout << min(abs(a - upper), abs(a - lower)) << '\n';
+        for (int j = i + 1; j <= len; ++j) {
+            lower = lower * 10 + d1;
+            upper = upper * 10 + d0;
+        }
     }
+
+    cout << min(abs(a - upper), abs(a - lower)) << '\n';
 }
