@@ -84,24 +84,57 @@ void solve() {
     // but we can't handle overlaps this way, if some position j is counted with some coefficient bi then position j - 1
     // must take into account that and when it also uses that coefficient bi.
 
-    ordered_set<pair<long long, long long>> seen;
-    ordered_set<pair<long long, long long>> pref;
-    long long total = 0;
+    //ordered_set<pair<long long, long long>> seen;
+    //ordered_set<pair<long long, long long>> pref;
+    //long long total = 0;
 
-    for (int i = 0; i < n; ++i) {
-        long long inv = seen.size() - seen.order_of_key({ a[i], LLONG_MAX });
-        seen.insert({ a[i], i });
+    //for (int i = 0; i < n; ++i) {
+    //    long long inv = seen.size() - seen.order_of_key({ a[i], LLONG_MAX });
+    //    seen.insert({ a[i], i });
 
-        for (int l = 0; l < n; ++l) {
-            long long cur = a[i] * b[l];
-            long long greater = pref.size() - pref.order_of_key({ cur, LLONG_MAX });
-            total = (total + greater) % mod;
+    //    for (int l = 0; l < n; ++l) {
+    //        long long cur = a[i] * b[l];
+    //        long long greater = pref.size() - pref.order_of_key({ cur, LLONG_MAX });
+    //        total = (total + greater) % mod;
+    //    }
+    //    total -= n * inv;
+
+    //    for (int k = 0; k < n; ++k) {
+    //        long long val = a[i] * b[k];
+    //        pref.insert({ val, i * n + k });
+    //    }
+    //}
+
+    //long long mult_inv = pow_(n * (n - 1), mod - 2);
+    //total = (total * mult_inv) % mod;
+    //cout << total << '\n';
+
+    struct Frac {
+        long long a;
+        long long b;
+
+        bool operator<(const Frac& other) const {
+            return (__int128)a * other.b < (__int128)other.a * b;
         }
-        total -= n * inv;
+    };
 
-        for (int k = 0; k < n; ++k) {
-            long long val = a[i] * b[k];
-            pref.insert({ val, i * n + k });
+    vector<Frac> coeff;
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            if (i == j) continue;
+            coeff.push_back({ b[i], b[j] });
+        }
+    }
+    sort(coeff.begin(), coeff.end());
+
+    // aj * bk > ai * bl => aj / ai > bl / bk
+    long long total = 0;
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < i; ++j) {
+            Frac f = { a[j], a[i] };
+            long long cnt = lower_bound(coeff.begin(), coeff.end(), f) - coeff.begin();
+
+            total = (total + cnt) % mod;
         }
     }
 
