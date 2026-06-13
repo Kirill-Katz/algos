@@ -19,6 +19,7 @@ int main() {
     return 0;
 }
 
+
 void solve() {
     int n;
     cin >> n;
@@ -28,81 +29,122 @@ void solve() {
         cin >> a[i];
     }
 
-    // might be binary search, because the function of the answer is monotonic, like TTFF style
-    // the ans is also bounded: 0 <= ans <= n / 2
+    // Explanation:
+    // A subarray a[l..r] is good if its values are distinct and consecutive.
+    // While fixing l and extending r, we can maintain the minimum value, maximum value,
+    // and duplicate counts. Then a[l..r] is good exactly when there are no duplicates
+    // and mx - mn == r - l.
+    //
+    // Since we need two subarrays of the same length, the maximum possible length is n / 2.
+    // Therefore, for every starting index l, we only need to extend r while the length is <= n / 2.
+    // This gives O(n^2) total work.
+    //
+    // For every good subarray, we store:
+    //     pos[l][len] = mn
+    // meaning that the subarray starting at l with length len is good and has value interval
+    //     [mn, mn + len - 1].
+    //
+    // Now we need to find two non-overlapping good subarrays of the same length whose value
+    // intervals are adjacent. If one good subarray has value interval
+    //     [mn, mn + len - 1],
+    // then the other one must have minimum value either:
+    //     mn - len
+    // or:
+    //     mn + len.
+    //
+    // To answer this quickly, we build:
+    //     best[mn][len][0] = earliest starting index of a good subarray with minimum mn and length len
+    //     best[mn][len][1] = latest starting index of a good subarray with minimum mn and length len
+    //
+    // Earliest and latest are enough because two subarrays of length len are non-overlapping if
+    // one starts at least len positions after the other. So for two value intervals mn1 and mn2,
+    // we only need to check:
+    //     earliest[mn1] + len <= latest[mn2]
+    // or
+    //     earliest[mn2] + len <= latest[mn1].
+    //
+    // Then we iterate over all mn and len, check the adjacent value intervals mn - len and mn + len,
+    // and update the answer.
 
-    auto check = [&](int v) {
+    vector<vector<int>> pos(n, vector<int>(n / 2 + 1, 0));
+
+    for (int l = 0; l < n; ++l) {
         vector<int> cnt(n + 1);
-        unordered_set<long long> st;
+        int mn = n + 1;
+        int mx = 0;
 
-        auto key = [](int start, int finish) {
-            return (1LL * (uint32_t) start << 32) | (uint32_t)finish;
-        };
+        for (int r = l; r < n && r - l + 1 <= n / 2; ++r) {
+            int x = a[r];
 
-        auto undo_key = [](long long z) {
-            int x = (int)(z >> 32);
-            int y = (int)(z & 0xffffffff);
-            return pair<int,int>{x, y};
-        };
+            cnt[x]++;
 
-        for (int i = 0; i < v; ++i) {
-            cnt[a[i]]++;
-        }
-
-        for (int i = 0; i <= n - v; ++i) {
-            if (i > 0) {
-                cnt[a[i - 1]]--;
-                cnt[a[v + i - 1]]++;
+            if (cnt[x] > 1) {
+                break;
             }
 
-            for (int c = 0; c <= n; ++c) {
-                int local = 0;
+            mn = min(x, mn);
+            mx = max(x, mx);
+            int len = r - l + 1;
 
-                if (cnt[c] == 0) {
-                    continue;
-                }
-
-                if (cnt[c] > 1) {
-                    break;
-                }
-
-                int j = c;
-                while (j <= n && cnt[j] == 1) {
-                    j++;
-                }
-
-                if (j - c == v) {
-                    st.insert(key( c, c + v - 1));
-                }
+            if (mx - mn == r - l) {
+                pos[l][len] = mn;
             }
         }
+    }
 
-        for (long long k : st) {
-            auto [x, y] = undo_key(k);
+    vector<vector<array<int, 2>>> best(n + 1, vector<array<int, 2>>(n / 2 + 1, { INT_MAX, -1 }));
 
-            long long lower = key(x - v, x - 1);
-            long long upper = key(y + 1, y + v);
+    for (int l = 0; l < n; ++l) {
+        for (int len = 1; len <= n / 2; ++len) {
+            int mn = pos[l][len];
 
-            if (st.contains(lower) || st.contains(upper)) {
-                return true;
+            if (mn == 0) {
+                continue;
             }
+
+            best[mn][len][0] = min(best[mn][len][0], l);
+            best[mn][len][1] = max(best[mn][len][1], l);
+        }
+    }
+
+    auto check = [&](int a_mn, int b_mn, int len) {
+        if (a_mn < 1 || a_mn > n || b_mn < 1 || b_mn > n) {
+            return false;
+        }
+
+        if (best[a_mn][len][0] == INT_MAX || best[b_mn][len][0] == INT_MAX) {
+            return false;
+        }
+
+        int a_first = best[a_mn][len][0];
+        int a_last = best[a_mn][len][1];
+
+        int b_first = best[b_mn][len][0];
+        int b_last = best[b_mn][len][1];
+
+        if (a_first + len <= b_last) {
+            return true;
+        }
+
+        if (b_first + len <= a_last) {
+            return true;
         }
 
         return false;
     };
 
+    int ans = 0;
+    for (int mn = 1; mn <= n; ++mn) {
+        for (int len = 1; len <= n / 2; ++len) {
+            if (check(mn, mn - len, len)) {
+                ans = max(len, ans);
+            }
 
-    int l = 0, r = n / 2;
-
-    while (l < r) {
-        int m = l + (r - l + 1) / 2;
-
-        if (check(m)) {
-            l = m;
-        } else {
-            r = m - 1;
+            if (check(mn, mn + len, len)) {
+                ans = max(len, ans);
+            }
         }
     }
 
-    cout << l << '\n';
+    cout << ans << '\n';
 }
