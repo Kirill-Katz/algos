@@ -49,5 +49,5 @@ void solve() {
     long long right_0 = (n + 1) / 4 - x / 4;
 
     long long ans = ((__int128)left_0 * right_0 % mod + (__int128)left_1 * right_1 % mod) % mod;
-    cout << ans % 998224353 << '\n';
+    cout << ans << '\n';
 }
