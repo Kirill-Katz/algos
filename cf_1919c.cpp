@@ -28,55 +28,24 @@ void solve() {
         cin >> a[i];
     }
 
-    // reverse LIS?
-
-
-    vector<int> parent(n, -1);
-    vector<int> tail;
-    vector<int> tail_idx;
-
-    for (int i = 0; i < n; ++i) {
-        int x = -a[i];
-
-        int pos = lower_bound(tail.begin(), tail.end(), x) - tail.begin();
-
-        if (pos == (int)tail.size()) {
-            tail.push_back(x);
-            tail_idx.push_back(i);
-        } else {
-            tail[pos] = x;
-            tail_idx[pos] = i;
-        }
-
-        if (pos > 0) {
-            parent[i] = tail_idx[pos - 1];
-        }
-    }
-
-    vector<int> seq;
-    int cur = tail_idx.back();
-
-    while (cur != -1) {
-        seq.push_back(cur);
-        cur = parent[cur];
-    }
-
-    reverse(seq.begin(), seq.end());
-
-    vector<int> rem;
-    int j = 0;
-    for (int i = 0; i < n; ++i) {
-        if (j < (int)seq.size() && i == seq[j]) {
-            j++;
-        } else {
-            rem.push_back(a[i]);
-        }
-    }
+    // 5 2 1 4
+    int mx = INT_MAX;
+    int mn = INT_MAX;
 
     int ans = 0;
-    for (int i = 0; i < (int)rem.size() - 1; ++i) {
-        if (rem[i] < rem[i + 1]) {
+
+    for (int v : a) {
+        if (mn > mx) {
+            swap(mn, mx);
+        }
+
+        if (v <= mn) {
+            mn = v;
+        } else if (v <= mx) {
+            mx = v;
+        } else {
             ans++;
+            mn = v;
         }
     }
 
