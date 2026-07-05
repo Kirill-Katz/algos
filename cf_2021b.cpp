@@ -38,7 +38,6 @@ void solve() {
             m[a[i] % x]++;
             ++i;
         }
-
         if (i < n && a[i] == mex) {
             i++;
         } else if (m[mex % x]) {
