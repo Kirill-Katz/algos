@@ -19,7 +19,7 @@ mkdir -p bin
 name=$(basename "$src" .cpp)
 out="bin/$name"
 
-g++ -std=gnu++20 -O2 -Wall -Wextra "$src" -o "$out"
+g++-16 -std=gnu++20 -O2 -Wall -Wextra "$src" -o "$out"
 
 "$out"
 
