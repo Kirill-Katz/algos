@@ -53,5 +53,6 @@ void solve() {
         }
     }
 
+
     cout << best << ' ' << removable << '\n';
 }
