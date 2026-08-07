@@ -147,12 +147,7 @@ void solve() {
     cin >> n >> k;
 
     long long min_v = 2 * n - 2;
-    long long max_v = 0;
-    if (n % 2) {
-        max_v = (n - 1) * (2 + (n - 1)) / 2;
-    } else {
-        max_v = n + (n - 2) / 2 * n;
-    }
+    long long max_v = (n * n) / 2;
 
     if (k < min_v || k > max_v || k % 2) {
         cout << -1 << '\n';
