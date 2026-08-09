@@ -9,47 +9,76 @@ int main() {
     int n;
     cin >> n;
 
-    vector<int> a(n);
-    for (int i = 0; i < n; ++i) {
-        cin >> a[i];
-    }
+    vector<int> src(n);
+    iota(src.begin(), src.end(), 1);
 
+    vector<int> seg(4 * n + 5);
 
-    vector<long long> seg(4*n);
-    auto build = [&] (auto&& self, int v, int l, int r) -> void {
+    auto fill = [&](auto&& self, int u, int l, int r) {
         if (l == r) {
-            seg[v] = a[l];
+            seg[u] = src[l];
             return;
         }
 
         int m = l + (r - l) / 2;
+        int left = 2 * u + 1;
+        int right = 2 * u + 2;
 
-        self(self, v*2, l, m);
-        self(self, v*2 + 1, m + 1, r);
+        self(self, left, l, m);
+        self(self, right, m + 1, r);
 
-        seg[v] = seg[v * 2] + seg[v * 2 + 1];
+        seg[u] = max(seg[left], seg[right]);
     };
 
-    auto get_impl = [&] (auto&& self, int v, int tl, int tr, int l, int r) -> long long {
-        if (l > r) return 0;
-
-        if (l == tl && r == tr) {
-            return seg[v];
+    auto change = [&](auto&& self, int u, int l, int r, int p, int v) {
+        if (l > p || p > r) {
+            return;
         }
 
-        int tm = tl + (tr - tl) / 2;
+        if (l == r && l == p) {
+            seg[u] = v;
+            return;
+        }
 
-        return
-            self(self, v * 2, tl, tm, l, min(r, tm)) +
-            self(self, v * 2 + 1, tm + 1, tr, max(l, tm + 1), r);
+        int left = 2 * u + 1;
+        int right = 2 * u + 2;
+
+        int m = l + (r - l) / 2;
+
+        self(self, left, l, m, p, v);
+        self(self, right, m + 1, r, p, v);
+
+        seg[u] = max(seg[left], seg[right]);
     };
-
-    auto get = [&] (int l, int r) {
-        return get_impl(get_impl, 1, 0, n - 1, l, r);
-    };
-
-
-
-
-
 }
+
+int compact() {
+    int n
+    cin >> n;
+
+    vector<int> src(n);
+    iota(src.begin(), src.end(), 1);
+
+    vector<int> seg(n * 2);
+
+    auto fill = [&](const auto& src, auto& seg) {
+        for (int i = 0; i < n; ++i) {
+            seg[n + i] = src[i];
+        }
+        for (int i = n - 1; i > 0; --i) {
+            seg[i] = max(seg[2 * i], seg[2 * i + 1]);
+        }
+    };
+
+    auto change = [&](auto& seg, int p, auto v) {
+        p += seg.size() / 2;
+        seg[p] = v;
+
+        while (p > 1) {
+            p /= 2;
+            seg[p] = max(seg[2 * p], seg[2 * p + 1]);
+        }
+    };
+}
+
+
