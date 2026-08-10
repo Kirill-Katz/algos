@@ -41,6 +41,72 @@ void solve() {
    // the branches. J can pick the path (u, c, ..., ll) which leads to an even number of paths being available. Thus we have:
    // T picks (s, f), J picks (u, c, ..., l1), T picks the reaming path (...., l2), J wins by picking path (..., l3).
    //
+   // It seems like the form of the subtree rooted at a child of c, c in (s, f) doesn't matter, if J makes the first move in that tree, he alwasy wins.
+   // Thus, the rule is: if a node has an even number of children (children outside of (s, f)), then it is ok, if it has an odd number of children, then
+   // it will lead to J winning.
    //
-   //
+
+    int n;
+    cin >> n;
+
+    vector<vector<int>> g(n + 1);
+
+    for (int i = 0; i < n - 1; ++i) {
+        int u, v;
+        cin >> u >> v;
+        g[u].push_back(v);
+        g[v].push_back(u);
+    }
+
+    vector<long long> dp(n + 1, 0);
+
+    auto bottom_top = [&](auto&& self, int v, int p) -> void {
+        long long total = 0;
+        int children = 0;
+
+        for (int u : g[v]) {
+            if (u == p) continue;
+
+            self(self, u, v);
+            total += dp[u];
+            children++;
+        }
+
+        if (children % 2) {
+            dp[v] = total;
+        } else {
+            dp[v] = 1;
+        }
+    };
+
+    bottom_top(bottom_top, 1, -1);
+
+    long long ans = 0;
+    auto top_bottom = [&](auto&& self, int v, int p) -> void {
+        long long total = 0;
+
+        for (int u : g[v]) {
+            if (u == p) continue;
+            total += dp[u];
+        }
+
+        if (g[v].size() % 2) {
+            ans += total;
+        } else {
+            for (int u : g[v]) {
+                if (u == p) continue;
+                total -= dp[u];
+                ans += total * dp[u];
+            }
+        }
+
+        for (int u : g[v]) {
+            if (u == p) continue;
+            self(self, u, v);
+        }
+    };
+
+    top_bottom(top_bottom, 1, -1);
+
+    cout << ans << '\n';
 }
