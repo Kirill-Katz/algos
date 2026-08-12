@@ -20,14 +20,6 @@ int main() {
 }
 
 void solve() {
-    int n;
-    cin >> n;
-
-    vector<int> a(n);
-    for (int  i = 0; i < n; ++i) {
-        cin >> a[i];
-    }
-
     // So from the perspective of an a[i] we have a range from [max(0, i - a[i]), min(n - 1, i + a[i])] inside which j cannot be for it
     // to be compatible with i.
     //
@@ -44,5 +36,56 @@ void solve() {
     // [some_datastructure].insert({ a[i] + i, best })
     //
 
-    cout << "idk" << '\n';
+    int n;
+    cin >> n;
+
+    vector<int> a(n);
+    for (int  i = 0; i < n; ++i) {
+        cin >> a[i];
+    }
+
+    vector<long long> seg(2 * n);
+    auto change = [&](auto& seg, int p, auto v) {
+        p += seg.size() / 2;
+        seg[p] = v;
+
+        while (p > 1) {
+            p /= 2;
+            seg[p] = max(seg[2 * p], seg[2 * p + 1]);
+        }
+    };
+
+    auto get_max = [&](auto& seg, int l, int r) {
+        int n = seg.size() / 2;
+        long long ans = 0;
+
+        for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
+            if (l & 1) ans = max(ans, seg[l++]);
+            if (r & 1) ans = max(ans, seg[--r]);
+        }
+
+        return ans;
+    };
+
+    vector<vector<pair<int, long long>>> defer(n);
+    long long ans = 0;
+    for (int i = 0; i < n; ++i) {
+        for (auto [idx, val] : defer[i]) {
+            change(seg, idx, val);
+        }
+
+        int r = i - a[i];
+        long long max_v = 0;
+
+        if (r > 0) {
+            max_v = get_max(seg, 0, r);
+        }
+
+        ans = max(ans, max_v + a[i]);
+        if (a[i] + i + 1 < n) {
+            defer[a[i] + i + 1].push_back({ i, max_v + a[i] });
+        }
+    }
+
+    cout << ans << '\n';
 }
