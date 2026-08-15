@@ -54,4 +54,91 @@ void solve() {
     // nodes of every node, then update all the paths this node is a part of (there are n^2 paths, for n < 2000 it is ok), if we could
     // somehow make these ranged updates log(n) we could have n^2*log(n) which would be fine for this problem.
 
+    vector<int> parent(n + 1), depth(n + 1), order;
+
+    auto dfs = [&](auto&& self, int u, int p) -> void {
+        parent[u] = p;
+        order.push_back(u);
+
+        for (int v : g[u]) {
+            if (v == p) continue;
+
+            depth[v] = depth[u] + 1;
+            self(self, v, u);
+        }
+    };
+
+    dfs(dfs, 1, 0);
+
+    vector<vector<int>> dist(n + 1, vector<int>(n + 1));
+
+    for (int s = 1; s <= n; ++s) {
+        auto get_dist = [&](auto&& self, int u, int p, int d) -> void {
+            dist[s][u] = d;
+
+            for (int v : g[u]) {
+                if (v == p) continue;
+                self(self, v, u, d + 1);
+            }
+        };
+
+        get_dist(get_dist, s, 0, 0);
+    }
+
+    vector<vector<int>> anc(n + 1, vector<int>(n + 1));
+
+    for (int v = 1; v <= n; ++v) {
+        int u = v;
+
+        while (u != 0) {
+            anc[v][depth[u]] = u;
+            u = parent[u];
+        }
+    }
+
+    auto lca = [&](int u, int v) {
+        int d = (depth[u] + depth[v] - dist[u][v]) / 2;
+        return anc[u][d];
+    };
+
+    vector<vector<long long>> cnt(n + 1, vector<long long>(n + 1));
+
+    for (int u = 1; u <= n; ++u) {
+        for (int v = u; v <= n; ++v) {
+            int k = dist[u][v] + 1;
+            int x = lca(u, v);
+
+            cnt[u][k]++;
+            cnt[v][k]++;
+            cnt[x][k]--;
+
+            if (parent[x] != 0) {
+                cnt[parent[x]][k]--;
+            }
+        }
+    }
+
+    reverse(order.begin(), order.end());
+
+    for (int u : order) {
+        if (parent[u] == 0) continue;
+
+        for (int k = 1; k <= n; ++k) {
+            cnt[parent[u]][k] += cnt[u][k];
+        }
+    }
+
+    long long ans = 0;
+    auto dfs_2 = [&](auto&& self, int u, int p, int l = 0) -> void {
+        if (d - l > 0) {
+            ans += cnt[u][d - l];
+        }
+
+        for (int v : g[u]) {
+            if (v == p) continue;
+            self(self, v, u, l + 1);
+        }
+    };
+
+    cout << ans << '\n';
 }
