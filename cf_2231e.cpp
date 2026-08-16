@@ -58,7 +58,6 @@ void solve() {
 
     vector<vector<int>> up_cnt(n + 1, vector<int>(n + 1, 0));
     vector<vector<int>> down_cnt(n + 1, vector<int>(n + 1, 0));
-    vector<vector<int>> down_cnt_node(n + 1, vector<int>(n + 1, 0));
 
     vector<vector<int>> subtree(n + 1, vector<int>());
     vector<vector<int>> children(n + 1, vector<int>());
@@ -121,7 +120,22 @@ void solve() {
         }
     };
 
-    auto compute_paths = [&](int node) -> void {
+    dist_down(dist_down, 1, 0);
+    compute_subtrees(compute_subtrees, 1, 0);
+
+    for (int v = 1; v <= n; ++v) {
+        dist_up(dist_up, v, v, 0);
+    }
+
+    for (int v = 1; v <= n; ++v) {
+        aggregate_dist_down(v);
+        aggregate_dist_up(v);
+    }
+
+    long long ans = 0;
+    auto cnt = [&](int node) -> void {
+        long long ans_up = 0;
+        long long ans_down = 0;
         for (int i = 0; i < (int)children[node].size(); ++i) {
             for (int j = i + 1; j < (int)children[node].size(); ++j) {
                 int child_left = children[node][i];
@@ -129,25 +143,43 @@ void solve() {
 
                 for (int u : subtree[child_left]) {
                     for (int v : subtree[child_right]) {
+                        int len = down[node][u] + down[node][v];
 
+                        if (len > d - 1) {
+                            continue;
+                        }
+
+                        if (len == d - 1) {
+                            ans += d - 2;
+                        } else {
+                            int rem = d - 1 - len;
+
+                            ans_down += down_cnt[node][rem] -
+                                down_cnt[child_left][rem - 1] -
+                                down_cnt[child_right][rem - 1];
+
+                            ans_up += up_cnt[node][rem];
+                        }
                     }
                 }
             }
         }
-    };
 
-    long long ans = 0;
-
-    auto count_vertex = [&](int node) -> void {
-        for (int path_size = 1; path_size < d; ++path_size) {
-            int rem = d - path_size;
-            ans += 1LL * down_cnt[node][path_size] * up_cnt[node][rem];
+        for (int child : children[node]) {
+            for (int u : subtree[child]) {
+                if (down[node][u] == d - 1) {
+                    ans += d - 2;
+                }
+            }
         }
 
-        ans += 1LL * (down_cnt_node[node][d] + down_cnt[node][d]) * (d - 2);
+        ans += ans_down / 3;
+        ans += ans_up;
     };
 
-
+    for (int v = 1; v <= n; ++v) {
+        cnt(v);
+    }
 
     cout << ans << '\n';
 }
