@@ -45,7 +45,7 @@ void solve() {
         sorted_a[i] = a[idx[i]];
     }
 
-    vector<string> excluding_first(k - 1);
+    vector<string> excluding_first;
     for (int i = 0; i < k - 1; ++i) {
         excluding_first.push_back(sorted_a[i]);
     }
@@ -72,23 +72,37 @@ void solve() {
         return a > b ? a : b;
     };
 
-    sort(excluding_first.begin(), excluding_first.end(), [&](const auto& s1, const auto& s2) {
-        if (remove_lead_zs(s1)[0] > remove_lead_zs(s2)[0]) {
-            return true;
-        }
+    string max_prefix = sorted_a[k - 1];
+    for (int i = k; i < n; ++i) {
+        string cur = remove_lead_zs(max_prefix);
+        string cand = remove_lead_zs(sorted_a[i]);
 
-        return false;
+        if (cand.size() > cur.size() || (cand.size() == cur.size() && cand > cur)) {
+            max_prefix = sorted_a[i];
+        }
+    }
+
+    vector<string> other = excluding_first;
+    other.push_back(sorted_a[k - 1]);
+
+    excluding_first.push_back(max_prefix);
+    sort(excluding_first.begin(), excluding_first.end(), [&](const auto& s1, const auto& s2) {
+        return s1 + s2 > s2 + s1;
     });
 
-    string max_prefix = remove_lead_zs(sorted_a[k - 1]);
-    for (int i = k; i < n; ++i) {
-        max_prefix = numeric_max(max_prefix, remove_lead_zs(sorted_a[i]));
-    }
+    sort(other.begin(), other.end(), [&](const auto& s1, const auto& s2) {
+        return s1 + s2 > s2 + s1;
+    });
 
-    string ans = max_prefix;
+    string ans1 = "";
     for (const auto& s : excluding_first) {
-        ans += s;
+        ans1 += s;
     }
 
-    cout << ans << '\n';
+    string ans2 = "";
+    for (const auto& s : other) {
+        ans2 += s;
+    }
+
+    cout << numeric_max(remove_lead_zs(ans1), remove_lead_zs(ans2)) << '\n';
 }
