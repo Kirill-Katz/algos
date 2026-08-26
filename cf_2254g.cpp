@@ -57,21 +57,86 @@ void solve() {
         g[i].push_back(p);
     }
 
-    int leaves = 0;
+    vector<vector<int>> paths;
 
-    auto dfs = [&](auto&& self, int u, int p) {
+    int k = 0;
+    auto init = [&](auto&& self, int u, int p) -> pair<int, vector<int>> {
         bool is_leaf = true;
 
+        int min_max = INT_MAX;
+
+        vector<pair<int, vector<int>>> cand;
+
         for (int v : g[u]) {
-            if (u == p) continue;
+            if (v == p) continue;
 
             is_leaf = false;
-            self(self, v, u);
+            auto [mx, vec] = self(self, v, u);
+            cand.push_back({ mx, std::move(vec) });
+
+            min_max = min(mx, min_max);
         }
 
-        if (is_leaf) leaves++;
+        if (is_leaf) {
+            k++;
+            min_max = a[u];
+        }
+
+        vector<int> want;
+        bool found = false;
+        for (auto& [mx, vec] : cand) {
+            if (!found && mx == min_max) {
+                want = std::move(vec);
+                found = true;
+            } else {
+                paths.push_back(std::move(vec));
+            }
+        }
+
+        want.push_back(a[u]);
+        min_max = max(a[u], min_max);
+
+        return { min_max, want };
     };
 
+    auto [mx, vec] = init(init, 1, 0);
+    paths.push_back(std::move(vec));
 
+    for (auto& path : paths) {
+        sort(path.begin(), path.end());
+    }
 
+    long long initial_score = 0;
+    vector<long long> ans(n + 1);
+    for (int i = 1; i < k; ++i) {
+        ans[i] = -1;
+    }
+
+    for (auto& path: paths) {
+        if (!path.empty()) {
+            initial_score += path.back();
+            path.pop_back();
+        }
+    }
+    ans[k] = initial_score;
+
+    vector<int> total;
+    for (auto& path : paths) {
+        for (int val : path) {
+            total.push_back(val);
+        }
+    }
+
+    sort(total.begin(), total.end());
+
+    for (int i = k + 1; i <= n; ++i) {
+        initial_score += total.back();
+        total.pop_back();
+        ans[i] = initial_score;
+    }
+
+    for (int i = 1; i <= n; ++i) {
+        cout << ans[i] << ' ';
+    }
+    cout << '\n';
 }
