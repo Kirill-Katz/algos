@@ -57,81 +57,77 @@ void solve() {
         g[i].push_back(p);
     }
 
-    vector<vector<int>> paths;
+    using pq_type = priority_queue<int, vector<int>, greater<int>>;
+    vector<int> other;
 
     int k = 0;
-    auto init = [&](auto&& self, int u, int p) -> pair<int, vector<int>> {
+    auto init = [&](auto&& self, int u, int p) -> pq_type  {
         bool is_leaf = true;
 
-        int min_max = INT_MAX;
-
-        vector<pair<int, vector<int>>> cand;
+        pq_type local_pq;
+        vector<pq_type> children;
 
         for (int v : g[u]) {
             if (v == p) continue;
-
             is_leaf = false;
-            auto [mx, vec] = self(self, v, u);
-            cand.push_back({ mx, std::move(vec) });
-
-            min_max = min(mx, min_max);
+            children.push_back(self(self, v, u));
         }
 
         if (is_leaf) {
             k++;
-            min_max = a[u];
+            pq_type pq;
+            pq.push(a[u]);
+            return pq;
         }
 
-        vector<int> want;
-        bool found = false;
-        for (auto& [mx, vec] : cand) {
-            if (!found && mx == min_max) {
-                want = std::move(vec);
-                found = true;
-            } else {
-                paths.push_back(std::move(vec));
+        int largest = 0;
+        for (int i = 1; i < (int)children.size(); ++i) {
+            if (children[largest].size() < children[i].size()) {
+                largest = i;
             }
         }
 
-        want.push_back(a[u]);
-        min_max = max(a[u], min_max);
+        for (int i = 0; i < (int)children.size(); ++i) {
+            if (i == largest) continue;
 
-        return { min_max, want };
+            while (!children[i].empty()) {
+                int val = children[i].top();
+                children[i].pop();
+                children[largest].push(val);
+            }
+        }
+
+        if (a[u] > children[largest].top()) {
+            int val = children[largest].top();
+            children[largest].pop();
+            children[largest].push(a[u]);
+            other.push_back(val);
+        } else {
+            other.push_back(a[u]);
+        }
+
+        return std::move(children[largest]); // doesn't qualify for NRVO/RVO so has to be std::moved
     };
 
-    auto [mx, vec] = init(init, 1, 0);
-    paths.push_back(std::move(vec));
-
-    for (auto& path : paths) {
-        sort(path.begin(), path.end());
-    }
+    auto initial_mxs = init(init, 1, 0);
 
     long long initial_score = 0;
+    while (!initial_mxs.empty()) {
+        initial_score += 1LL * initial_mxs.top();
+        initial_mxs.pop();
+    }
+
     vector<long long> ans(n + 1);
     for (int i = 1; i < k; ++i) {
         ans[i] = -1;
     }
-
-    for (auto& path: paths) {
-        if (!path.empty()) {
-            initial_score += path.back();
-            path.pop_back();
-        }
-    }
     ans[k] = initial_score;
 
-    vector<int> total;
-    for (auto& path : paths) {
-        for (int val : path) {
-            total.push_back(val);
-        }
-    }
-
-    sort(total.begin(), total.end());
+    sort(other.begin(), other.end());
 
     for (int i = k + 1; i <= n; ++i) {
-        initial_score += total.back();
-        total.pop_back();
+        initial_score += other.back();
+        other.pop_back();
         ans[i] = initial_score;
     }
 
