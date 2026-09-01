@@ -36,19 +36,27 @@ void solve() {
     // we can sort the values in b ascending, in this case if we apply b[0] then b[1] only the values in (b[0], b[1]]
     // will change.
     //
-    // After that we can apply b[2] and b[3]. Because b[3] > b[2] > b[1] > b[0] the score we gain won't decrease, after
-    // we apply 2 actions.
-    //
-    // We can try to start at either
+    // After we apply b[0] we change values in [0, b[0]], after we apply b[1] we returned values in [0, b[0]] to their prev state
+    // and then changed values in (b[0], b[1]], applying b[3] changes values in [0, b
     //
     //
 
-    vector<long long> prefix(n);
+    b.push_back(0);
+    sort(b.begin(), b.end());
 
-    prefix[0] = a[0];
-    for (int i = 1; i < n; ++i) {
-        prefix[i] = prefix[i - 1] + a[i];
+    vector<long long> prefix(n + 1);
+
+    for (int i = 0; i < n; ++i) {
+        prefix[i + 1] = prefix[i] + a[i];
     }
 
+    long long ans = 0;
+    for (int i = 1; i <= m; ++i) {
+        long long local = prefix[b[i]] - prefix[b[i - 1]];
+        ans += abs(local);
+    }
 
+    ans += prefix[n] - prefix[b[m]];
+
+    cout << ans << '\n';
 }
