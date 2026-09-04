@@ -19,11 +19,11 @@ int main() {
     return 0;
 }
 
-solve() {
-    int n, m;
+void solve() {
+    long long n, m;
     cin >> n >> m;
 
-    vector<int> a(n);
+    vector<long long> a(n);
     for (int i = 0; i < n; ++i) {
         cin >> a[i];
     }
@@ -34,10 +34,51 @@ solve() {
     // at move k we know for sure that one way to get the maximum score is just to sum up all the values <= 2^k
     // OR we could somehow deal with numbers > 2^k
 
+    long long sum = 0;
+    vector<long long> cnt(m + 1, 0);
+    for (int i = 0; i < n; ++i) {
+        cnt[a[i]]++;
+        sum += a[i];
+    }
 
+    vector<long long> suf(m + 1, 0);
+    suf[m] = cnt[m];
+    for (int i = m - 1; i >= 0; --i) {
+        suf[i] = suf[i + 1] + cnt[i];
+    }
+
+    vector<long long> answers(m + 1);
+
+    for (int k = 1; k <= m; ++k) {
+        if (k >= 31 || (1 << k) > m) {
+            answers[k] = sum;
+            continue;
+        }
+
+        long long max_v = (1 << k);
+
+        long long ans = 0;
+        for (long long y = 1; 1LL * y * max_v <= m; ++y) {
+            long long local = 0;
+
+            for (int j = 1; j < max_v; ++j) {
+                local += 1LL * suf[y * j];
+            }
+
+            local += 1LL * cnt[y * max_v];
+            ans = max(local, ans);
+        }
+
+        answers[k] = ans;
+    }
+
+    for (int k = 1; k <= m; ++k) {
+        cout << answers[k] << ' ';
+    }
+    cout << '\n';
 }
 
-// void solve() {
+// void solve_easy() {
 //     int n, m;
 //     cin >> n >> m;
 //
