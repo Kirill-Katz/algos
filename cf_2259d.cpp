@@ -24,53 +24,37 @@ void solve() {
     cin >> n;
 
     vector<pair<int, int>> a(n);
+
+    int zeros = 0;
     for (int i = 0; i < n; ++i) {
         int v;
         cin >> v;
         a[i] = {v, i};
+        zeros += v == 0;
     }
 
     sort(a.begin(), a.end());
 
-    array<char, 3> cmap = {'a', 'b', 'c'};
     string ans;
     ans.resize(n);
 
-    array<vector<int>, 3> sets;
-
-    int mod = 0;
-    sets[mod].push_back(a[0].first);
-    ans[a[0].second] = 'a';
-    mod++;
-
-    for (int i = 1; i < n; ++i) {
-        auto [val, idx] = a[i];
-
-        if (a[i].first == a[i - 1].first) {
-            sets[mod].push_back(val);
-        } else {
-            mod = 0;
-            sets[mod].push_back(val);
-        }
-
-        ans[idx] = cmap[mod];
-        mod = (mod + 1) % 3;
-    }
-
-    auto mex = [&](const auto& vec) {
-        int need = 0;
-
-        for (int v : vec) {
-            if (v == need) need++;
-        }
-
-        return need;
-    };
-
-    cout << mex(sets[0]) << ' ' << mex(sets[1]) << ' ' << mex(sets[2]) << '\n';
-
-    if (mex(sets[0]) + mex(sets[1]) + mex(sets[2]) >= 2 * max({ mex(sets[0]), mex(sets[1]), mex(sets[2]) })) {
+    if (zeros != 1) {
         cout << "YES" << '\n';
+
+        int i = 0;
+        ans[a[i].second] = 'A';
+        ++i;
+
+        while (i < n && a[i].first == 0) {
+            ans[a[i].second] = 'B';
+            ++i;
+        }
+
+        while (i < n) {
+            ans[a[i].second] = 'C';
+            ++i;
+        }
+
         cout << ans << '\n';
     } else {
         cout << "NO" << '\n';
