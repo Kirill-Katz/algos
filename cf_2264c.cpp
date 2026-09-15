@@ -70,11 +70,11 @@ void solve() {
     }
 
     for (int i = 0; i < n - 1; ++i) {
-        long long mult = n - 1 - i;
+        long long mult = n - 1LL - i;
 
         long long base = (suf[i] - (a[i] * mult) % mod + mod) % mod;
 
-        ans = (ans + (base * (total_configs * pow_(mult, mod - 2))) % mod) % mod;
+        ans = (ans + (base * (total_configs * pow_(mult, mod - 2) % mod)) % mod) % mod;
     }
 
     cout << ans << '\n';
