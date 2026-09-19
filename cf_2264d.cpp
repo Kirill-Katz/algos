@@ -26,87 +26,65 @@ void solve() {
     // [_____] 1 [_____] 1 [_____] 1 [______]
     //    x         y         z         w
 
-    int base = (n - 3) / 4;
+    if (n == 1) {
+        cout << "1" << '\n';
+        return;
+    }
 
-    long long zero_bad = [&](long long x, long long y, long long z, long long w) {
-        return 1LL * x * (x + 1) / 2 +
-        1LL * y * (y + 1) / 2 +
-        1LL * z * (z + 1) / 2 +
-        1LL * w * (w + 1) / 2;
+    if (n == 2) {
+        cout << "11" << '\n';
+        return;
+    }
+
+    if (n == 3) {
+        cout << "101" << '\n';
+        return;
+    }
+
+    array<int, 2> a = { n / 3 - 1, n / 3 };
+    array<int, 2> b = { 2 * n / 3 - 1, 2 * n / 3 };
+
+    vector<string> cand;
+    for (int i : a) {
+        for (int j : b) {
+            if (i < 0 || j < 0 || i >= j || j >= n) {
+                continue;
+            }
+
+            string c(n, '0');
+            c[i] = '1';
+            c[j] = '1';
+
+            cand.push_back(c);
+
+            if (j != n - 1) {
+                c[n - 1] = '1';
+                cand.push_back(c);
+            }
+        }
+    }
+
+    auto good = [](const string& s) -> bool {
+        array<int, 3> cnt = {1, 0, 0};
+        int rem = 0;
+
+        for (int i = 0; i < (int)s.size(); ++i) {
+            if (s[i] == '1') {
+                rem = (rem + (i % 2 == 0 ? 2 : 1)) % 3;
+            }
+
+            cnt[rem]++;
+        }
+
+        return *max_element(cnt.begin(), cnt.end()) - *min_element(cnt.begin(), cnt.end()) <= 1;
     };
 
-    string construct_ans = [&](long long x, long long y, long long z, long long w) {
-        string ans(n, "0");
-        ans[x] = '1';
-        ans[y + x + 1] = '1';
-        ans[y + x + z + 2] = '1';
-        ans[y + x + z + w + 3] = '1';
 
-        return ans;
-    };
-
-    vector<pair<long long, string>> ans;
-
-    // even, even
-    {
-        long long y = base;
-        long long z = base;
-
-        if (y & 1) {
-            y++;
+    for (const string& c : cand) {
+        if (good(c)) {
+            cout << c << '\n';
+            return;
         }
-
-        if (z & 1) {
-            z++;
-        }
-
-        long long x = ((n - 3) - y - z) / 2;
-        long long w = (n - 3) - x - y - z;
-
-        long long even_even_add = (x + 1) * (z + 1) + (y + 1) * (w + 1);
-        ans.push_back({ even_even_add + zero_bad(x, y, z, w), construct_ans(x, y, z, w) };
     }
-
-    // odd, even
-    {
-        long long y = base;
-        long long z = base;
-
-        if (!(y & 1)) {
-            y++;
-        }
-
-        if (z & 1) {
-            z++;
-        }
-
-        long long x = ((n - 3) - y - z) / 2;
-        long long w = (n - 3) - x - y - z;
-
-        long long odd_even_add = (y + 1) * (w + 1);
-        ans.push_back({ odd_even_add + zero_bad(x, y, z, w), construct_ans(x, y, z, w) };
-    }
-
-    // even, odd
-    {
-        long long y = base;
-        long long z = base;
-
-        if (y & 1) {
-            y++;
-        }
-
-        if (!(z & 1)) {
-            z++;
-        }
-
-        long long x = ((n - 3) - y - z) / 2;
-        long long w = (n - 3) - x - y - z;
-
-        long long even_odd_add = (x + 1) * (z + 1);
-        ans.push_back({ even_odd_add + zero_bad(x, y, z, w), construct_ans(x, y, z, w) };
-    }
-
-
 }
 
