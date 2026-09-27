@@ -20,40 +20,38 @@ int main() {
 }
 
 void solve() {
-    int n, k;
+    long long n, k;
     cin >> n >> k;
 
-    vector<int> a(n);
-    for (int i = 0; i < n; ++i) {
+    vector<long long> a(n);
+    for (long long i = 0; i < n; ++i) {
         cin >> a[i];
     }
 
-    vector<int> spf(n + 1);
-    for (int p = 2; p <= n; ++p) {
-        if (spf[p] != 0) {
-            continue;
-        }
+    vector<long long> spf(n + 1, 0);
 
-        for (int j = 0; j * p <= n; ++j) {
-            if (spf[j * p] == 0) {
-                spf[j * p] = p;
-            }
+    for (long long p = 2; p <= n; ++p) {
+        if (spf[p] != 0) continue;
+
+        for (long long i = 1; p * i <= n; ++i) {
+            if (spf[p * i] != 0) continue;
+            spf[p * i] = p;
         }
     }
 
-    vector<long long> dp(n + 1);
+    vector<long long> dp(n + 1, 0);
 
     for (long long v = k + 1; v <= n; ++v) {
         long long min_v = LLONG_MAX;
-
         long long tmp = v;
+
         while (tmp > 1) {
-            long long p = 1LL * spf[tmp];
-            min_v = min(min_v, p * dp[v / p]);
-            tmp = tmp / p;
+            long long p = spf[tmp];
+            min_v = min(min_v, 1 + p * dp[v / p]);
+            tmp /= p;
         }
 
-        dp[v] = 1 + min_v;
+        dp[v] = min_v;
     }
 
     long long ans = 0;

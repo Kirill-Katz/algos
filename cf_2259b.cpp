@@ -24,23 +24,20 @@ void solve() {
     cin >> n;
 
     vector<int> a(n);
+    int odd = 0;
+    int even_0 = 0;
+    int even_1 = 0;
+
     for (int i = 0; i < n; ++i) {
         cin >> a[i];
+
+        if (a[i] & 1) {
+            odd++;
+        } else {
+            even_0 += (a[i] / 2) % 2 == 0;
+            even_1 += (a[i] / 2) % 2 == 1;
+        }
     }
 
-    vector<int> b(n);
-    for (int i = 0; i < n; ++i) {
-        b[i] = a[i] - i;
-    }
-    ranges::sort(b);
-
-    map<int,int> dp;
-
-    int ans = 0;
-    for (int i = 0; i < n; ++i) {
-        dp[b[i]] = dp[b[i] - 1] + 1;
-        ans = max(ans, dp[b[i]]);
-    }
-
-    cout << ans << '\n';
+    cout << max({ odd, even_0, even_1 }) << '\n';
 }

@@ -23,44 +23,43 @@ void solve() {
     int n;
     cin >> n;
 
-    unordered_map<long long,long long> cnt;
+    unordered_map<long long, int> a;
 
     long long best = 0;
     long long total = 0;
     for (int i = 0; i < n; ++i) {
-        long long ai, c;
-        cin >> ai >> c;
-        cnt[ai] = c;
-        best = max(best, ai);
+        long long v, c;
+        cin >> v >> c;
+        a[v] = c;
+
+        best = max(v, best);
         total += c;
     }
 
-    auto check = [&](long long val) {
-        long long q = 1;
-        long long extra = 0;
-        val--;
+    auto check = [&](long long v) {
+        long long need = 1;
+        long long rem = 0;
 
-        while (val > 0 && q <= total) {
-            if (cnt[val] > q) {
-                extra += cnt[val] - q;
+        for (int i = v - 1; i >= 1; --i) {
+            long long have = a[i];
+
+            if (have >= need) {
+                rem += have - need;
             } else {
-                q = 2 * q - cnt[val];
+                need += need - have;
             }
 
-            val--;
+            if (need > total) {
+                break;
+            }
         }
 
-        if (q > total) {
-            return false;
-        }
-
-        return q <= cnt[0] + extra;
+        return rem + a[0]>= need;
     };
 
-    long long l = best;
-    long long r = 1e9 + 96;
+    long long l = best, r = 1e9;
 
-    while (l < r) { // TTTFFF
+    while (l < r) { // TTFF
         long long m = l + (r - l + 1) / 2;
 
         if (check(m)) {
