@@ -38,9 +38,6 @@ void solve() {
         b_set.insert(b[i]);
     }
 
-    ranges::sort(a, greater<int>());
-    ranges::sort(b, greater<int>());
-
     set<int> a_only;
     set<int> b_only;
     set<int> both;
@@ -61,79 +58,44 @@ void solve() {
         }
     }
 
-    int a_left = n - 1;
-    int b_left = m - 1;
-
     long long ans = 0;
 
-    for (int i = 0; i < n + m - 2; ++i) {
-        int a_only_el = INT_MIN;
-        int b_only_el = INT_MIN;
-        int both_el = INT_MIN;
+    int a_used = 0;
+    int b_used = 0;
+    int need = n + m - 1;
 
-        if (!a_only.empty()) {
-            a_only_el = *a_only.rbegin();
-        }
-        if (!b_only.empty()) {
-            b_only_el = *b_only.rbegin();
-        }
-        if (!both.empty()) {
-            both_el = *both.rbegin();
+    for (;;) {
+        if (need == 0) {
+            break;
         }
 
-        if (a_left == 0) {
-            if (b_only_el > both_el) {
-                ans += b_only_el;
-                b_only.erase(b_only_el);
-            } else {
-                ans += both_el;
-                both.erase(both_el);
-            }
+        bool can_a = !a_only.empty() && a_used < n;
+        bool can_b = !b_only.empty() && b_used < m;
+        bool can_both = !both.empty();
 
-            b_left--;
-            continue;
+        int av = can_a ? *a_only.rbegin() : INT_MIN;
+        int bv = can_b ? *b_only.rbegin() : INT_MIN;
+        int cv = can_both ? *both.rbegin() : INT_MIN;
+
+        int best = max({av, bv, cv});
+
+        if (best == INT_MIN) {
+            break;
         }
 
-        if (b_left == 0) {
-            if (a_only_el > both_el) {
-                ans += a_only_el;
-                a_only.erase(a_only_el);
-            } else {
-                ans += both_el;
-                both.erase(both_el);
-            }
+        ans += best;
+        need--;
 
-            a_left--;
-            continue;
-        }
-
-        if (a_only_el > max(both_el, b_only_el)) {
-            ans += a_only_el;
-            a_left--;
-            a_only.erase(a_only_el);
-            continue;
-        }
-
-        if (b_only_el > max(both_el, a_only_el)) {
-            ans += b_only_el;
-            b_left--;
-            b_only.erase(b_only_el);
-            continue;
-        }
-
-        if (both_el > max(b_only_el, a_only_el)) {
-            ans += both_el;
-            a_left > b_left ? --a_left : --b_left;
-            both.erase(both_el);
-            continue;
+        if (best == cv) {
+            both.erase(cv);
+        } else if (best == av) {
+            a_only.erase(av);
+            a_used++;
+        } else {
+            b_only.erase(bv);
+            b_used++;
         }
     }
-
-    ans += max({
-        a_only.empty() ? 0 : *a_only.rbegin(),
-        b_only.empty() ? 0 : *b_only.rbegin(),
-        both.empty() ? 0 : *both.rbegin()
-    });
 
     cout << ans << '\n';
 }
