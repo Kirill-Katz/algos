@@ -20,18 +20,22 @@ int main() {
 }
 
 void solve() {
-    int n, x;
-    cin >> n >> x;
+    int n;
+    cin >> n;
 
-    vector<int> a(n);
-    long long total = 0;
-
-    long long max_v = 0;
+    vector<pair<int, pair<int,int>>> a(n);
     for (int i = 0; i < n; ++i) {
-        cin >> a[i];
-        total += 1LL * a[i];
-        max_v = max(max_v, 1LL * a[i]);
+        int a1, a2;
+        cin >> a1 >> a2;
+        a[i] = { a1 + a2, {a1, a2} };
     }
 
-    cout << max(max_v, (total + x - 1) / x) << '\n';
+    ranges::sort(a);
+
+    for (auto v : a) {
+        auto [s, p] = v;
+        auto [a1, a2] = p;
+        cout << a1 << ' ' << a2 << ' ';
+    }
+    cout << '\n';
 }

@@ -20,18 +20,32 @@ int main() {
 }
 
 void solve() {
-    int n, x;
-    cin >> n >> x;
+    int l, r;
+    cin >> l >> r;
 
-    vector<int> a(n);
-    long long total = 0;
+    int fac = 1;
+    int pow = 0;
 
-    long long max_v = 0;
-    for (int i = 0; i < n; ++i) {
-        cin >> a[i];
-        total += 1LL * a[i];
-        max_v = max(max_v, 1LL * a[i]);
+    int cpy = l;
+    while (cpy > 0) {
+        cpy /= 3;
+
+        fac *= 3;
+        pow++;
     }
 
-    cout << max(max_v, (total + x - 1) / x) << '\n';
+    int c = l;
+    long long sum = pow;
+
+    while (fac <= r) {
+        sum += (fac - c) * pow;
+        c = fac;
+
+        pow++;
+        fac *= 3;
+    }
+
+    sum += (r - c + 1) * pow;
+
+    cout << sum << '\n';
 }
