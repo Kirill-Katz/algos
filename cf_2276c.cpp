@@ -46,6 +46,7 @@ void solve() {
 
     long long ans = 0;
     for (int l = 0; l < n - k; ++l) {
+        // r - l = k + 1 => r = k + 1 + l
         ans += cnt_right[prefix[l]];
         cnt_right[prefix[l + k + 1]]--;
     }
