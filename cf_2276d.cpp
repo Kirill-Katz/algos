@@ -47,7 +47,7 @@ void solve() {
         }
     }
 
-    bool star = g[center].size() == n - 1;
+    bool star = (int)g[center].size() == n - 1;
 
     for (int v = 1; v <= n; ++v) {
         if (v == center) continue;
