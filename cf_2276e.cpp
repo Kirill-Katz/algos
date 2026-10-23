@@ -36,4 +36,5 @@ void solve() {
     //
     // We can do that with a lazy seg tree, but there is probably a better way with prefixes somehow idk.
 
+
 }
