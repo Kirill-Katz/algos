@@ -33,7 +33,6 @@ void solve() {
         return;
     }
 
-
     auto x = max_element(a.begin(), a.begin() + n - k + 1) - a.begin();
     auto y = min_element(a.begin() + n - k + 1, a.end()) - a.begin();
 
