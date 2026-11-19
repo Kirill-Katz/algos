@@ -25,3 +25,4 @@ int main() {
     vector<int> parent(n);
     vector<int> size(n);
 }
+
